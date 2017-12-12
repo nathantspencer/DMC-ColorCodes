@@ -7,10 +7,16 @@ import code
 
 colors = []
 
+# class for printing colored output
+class colorizer:
+	END = '\033[0m'
+	GREEN = '\033[92m'
+
 def main():
 
 	scrape_colors()
-
+	write_csv()
+	print(colorizer.GREEN + 'Scraping completed.\r\n' + colorizer.END)
 
 def scrape_colors():
 
@@ -21,10 +27,13 @@ def scrape_colors():
 		paths_to_scrape.append('http://www.camelia.sk/dmc_' + str(i) + '.htm')
 
 	for path in paths_to_scrape:
+		print('\r\nRequesting page...')
 		response = requests.get(path)
+		print('Parsing XML...')
 		root_parse_tree = BeautifulSoup(response.text, 'lxml')
 
 		# the fourth tbody on each page contains the DMC colors
+		print('Finding color table...')
 		tables = root_parse_tree.find_all('tbody')
 		for row_index, row in enumerate(tables[4]):
 
@@ -44,16 +53,39 @@ def scrape_colors():
 
 				# first cell contains dmc color code
 				if cell_index % 3 == 0:
-					dmc_code = cell.get_text()
+					dmc_code = cell.get_text().lstrip()
 
 				# second cell contains color name
 				elif cell_index % 3 == 1:
-					color_name = cell.get_text()
+					raw_text = cell.get_text()
+					color_words = raw_text.split()
+					for color in color_words:
+						color_name = color_name + color + ' '
+					color_name = color_name.rstrip()
 
 				# third cell contains rgb color code
 				else:
 					rgb_code = cell['bgcolor']
-					print((dmc_code, color_name, rgb_code))
+					color = (dmc_code, color_name, rgb_code)
+					colors.append(color)
+					dmc_code = ''
+					color_name = ''
+					rgb_code = ''
+
+
+def write_csv():
+
+	print('\r\nOpening CSV file...')
+	file_handle = open('result.csv', 'w')
+
+	print('Writing CSV file...')
+	file_handle.write('DMC_COLOR, COLOR_NAME, RGB_COLOR\r\n')
+	for color in colors:
+		file_handle.write(color[0] + ', ')
+		file_handle.write(color[1] + ', ')
+		file_handle.write(color[2] + '\r\n')
+
+	file_handle.close()
 
 
 if __name__ == '__main__':
