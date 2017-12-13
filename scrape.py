@@ -12,12 +12,18 @@ class colorizer:
 	END = '\033[0m'
 	GREEN = '\033[92m'
 
+"""
+Runs the scraper and writes the resulting CSV.
+"""
 def main():
 
 	scrape_colors()
 	write_csv()
 	print(colorizer.GREEN + 'Scraping completed.\r\n' + colorizer.END)
 
+"""
+Populates `colors` by scraping from `http://www.camelia.sk` color tables.
+"""
 def scrape_colors():
 
 	global colors
@@ -72,7 +78,9 @@ def scrape_colors():
 					color_name = ''
 					rgb_code = ''
 
-
+"""
+Writes contents of `colors` to a CSV file `result.csv` in the current directory.
+"""
 def write_csv():
 
 	print('\r\nOpening CSV file...')
@@ -86,7 +94,6 @@ def write_csv():
 		file_handle.write(color[2] + '\r\n')
 
 	file_handle.close()
-
 
 if __name__ == '__main__':
 	main()
